@@ -8,32 +8,54 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <!-- Link to your updated stylesheet -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        /* Add margin to the select element */
+        #price-class {
+            margin-bottom: 1rem; /* Adjust the value as needed */
+            width: 100%; /* Full width */
+            padding: 12px; /* Adjust padding */
+            font-size: 1.2rem; /* Adjust font size */
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            -webkit-appearance: none; /* Safari */
+            -moz-appearance: none; /* Firefox */
+            appearance: none; /* Standard */
+        }
+    </style>
 </head>
 <body>
     <!-- Header -->
-    
+
 
     <!-- Main Content -->
     <main>
         <div class="container">
             <!-- Electricity Price Card -->
             <section id="price-container" class="card">
-                <h2>Strømpris SE03</h2>
+                <h2 id="current-price-class">Gjeldende Pris</h2>
                 <p id="price-display" class="price-display">-- øre/kWh</p>
                 <p id="last-updated" class="last-updated">Sist oppdatert: --:--</p>
+                <label for="price-class">Velg pris område:</label>
+                <select id="price-class" onchange="updatePriceClass(); fetchElectricityPrice()">
+                    <option value="NO1">Oslo / Øst-Norge NO1</option>
+                    <option value="NO2">Kristiansand / Sør-Norge NO2</option>
+                    <option value="NO3">Trondheim / Midt-Norge NO3</option>
+                    <option value="NO4">Tromsø / Nord-Norge NO4</option>
+                    <option value="NO5">Bergen / Vest-Norge NO5</option>
+                </select>
                 <button onclick="fetchElectricityPrice()" class="button primary" aria-label="Oppdater strømpris">
                     <span class="button-text">Oppdater Pris</span>
                 </button>
                 <p style="margin-top: 1rem;">
-                    <a href="https://www.elprisetjustnu.se">
-                        <img src="https://ik.imagekit.io/ajdfkwyt/hva-koster-strommen/elpriser-tillhandahalls-av-elprisetjustnu_ttNExOIU_.png" alt="Elpriser tillhandahålls av Elpriset just nu.se" width="200" height="45">
+                    <a href="https://www.hvakosterstrommen.no">
+                        <img src="https://ik.imagekit.io/ajdfkwyt/hva-koster-strommen/strompriser-levert-av-hvakosterstrommen_oTtWvqeiB.png" alt="Strømpriser levert av Hva koster strømmen.no"  width="200" height="45">
                     </a>
                 </p>
             </section>
 
             <!-- Heat Pump Control Card -->
             <section id="control-container" class="card">
-                <h2>Varmepumpe</h2>
+                <h2>Varmepumpe Test</h2>
                 <div class="control-panel">
                     <!-- Power Controls -->
                     <div class="button-group">
@@ -47,9 +69,10 @@
 
                     <!-- Threshold Controls -->
                     <div class="threshold-controls">
-                        <h3>Slår seg PÅ lik/under og AV over</h3>
+                        <h3>PÅ lik/under AV over</h3>
                         <div class="threshold-display">
                             <div class="threshold-item">
+                                <label>Prisgrense:</label>
                                 <span id="current-price-threshold" class="price">--</span>
                                 <span class="unit">øre/kWh</span>
                             </div>
@@ -71,18 +94,27 @@
     </main>
 
     <!-- Footer -->
-   
+
+
     <!-- Scripts -->
     <script>
         const REFRESH_INTERVAL = 300000; // 5 minutes
 
+        function updatePriceClass() {
+            const priceClass = document.getElementById('price-class');
+            const selectedOption = priceClass.options[priceClass.selectedIndex].text;
+            const currentPriceClass = document.getElementById('current-price-class');
+            currentPriceClass.innerText = `Gjeldende Pris (${selectedOption})`;
+        }
+
         async function fetchElectricityPrice() {
             const priceDisplay = document.getElementById('price-display');
             const lastUpdated = document.getElementById('last-updated');
+            const priceClass = document.getElementById('price-class').value;
 
             try {
                 priceDisplay.innerText = 'Henter pris...';
-                const response = await fetch('/api/strompris');
+                const response = await fetch(`/api/strompris?pris_klasse=${priceClass}`);
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -90,7 +122,7 @@
 
                 const data = await response.json();
 
-                if (data.pris !== undefined) {  // Changed from price to pris
+                if (data.pris !== undefined) {
                     priceDisplay.innerText = `${data.pris.toFixed(2)} øre/kWh`;
                     const now = new Date();
                     const hours = now.getHours().toString().padStart(2, '0');
@@ -200,6 +232,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            updatePriceClass();
             fetchElectricityPrice();
             fetchThreshold();
             setInterval(fetchElectricityPrice, REFRESH_INTERVAL);

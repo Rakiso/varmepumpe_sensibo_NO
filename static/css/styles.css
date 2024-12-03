@@ -143,6 +143,19 @@ body {
     appearance: none; /* Standard */
 }
 
+/* Add margin to the select element */
+#price-class {
+    margin-bottom: 1rem; /* Adjust the value as needed */
+    width: 100%; /* Full width */
+    padding: 12px; /* Adjust padding */
+    font-size: 1.2rem; /* Adjust font size */
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    -webkit-appearance: none; /* Safari */
+    -moz-appearance: none; /* Firefox */
+    appearance: none; /* Standard */
+}
+
 /* Error Message Styles */
 .error-message {
     color: var(--danger);
